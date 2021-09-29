@@ -1,0 +1,355 @@
+-- 1
+example : 0 ≠ 1 :=
+begin
+  -- ¬ (0 = 1)
+  -- (0 = 1) → false
+  assume h,
+  cases h,
+end
+
+
+-- 2
+example : 0 ≠ 0 → 2 = 3 :=
+begin
+  assume h,
+  have f : false := h (eq.refl 0),
+  exact false.elim (f),
+end
+
+-- 3
+example : ∀ (P : Prop), P → ¬¬P :=
+begin
+  assume P,
+  assume (p : P),
+  -- ¬¬P
+  -- ¬P → false
+  -- (P → false) → false
+  assume h,
+  have f := h p,
+  exact f,
+end 
+
+-- We might need classical (vs constructive) reasoning 
+#check classical.em
+open classical
+#check em
+
+/-
+axiom em : ∀ (p : Prop), p ∨ ¬p
+
+This is the famous and historically controversial
+"law" (now axiom) of the excluded middle. It's is
+a key to proving many intuitive theorems in logic
+and mathematics. But it also leads to giving up on
+having evidence *why* something is either true or
+not true, in that you no longer need a proof of 
+either P or of ¬P to have a proof of P ∨ ¬P.
+-/
+
+-- 4
+theorem neg_elim : ∀ (P : Prop), ¬¬P → P :=
+begin
+  assume P,
+  assume h,
+  have pornp := classical.em P,
+  cases pornp with p np,
+  assumption,
+  contradiction,
+end
+
+-- 5
+theorem demorgan_1 : ∀ (P Q : Prop), ¬ (P ∧ Q) ↔ ¬ P ∨ ¬ Q :=
+begin
+  assume P Q,
+  apply iff.intro,
+  assume notpq,
+  cases (em P) with p np,
+  cases (em Q) with q nq,
+  have pandq:= and.intro p q,
+  have pfalse:= notpq pandq,
+  exact false.elim pfalse,
+  exact or.intro_right(¬P) nq,
+  exact or.intro_left(¬Q) np,
+
+  assume npornq,
+  assume pandq,
+  cases npornq with np nq,
+  have p := and.elim_left pandq,
+  exact np p,
+  have q := and.elim_right pandq,
+  exact nq q,
+end
+
+
+-- 6
+theorem demorgan_2 : ∀ (P Q : Prop), ¬ (P ∨ Q) → ¬P ∧ ¬Q :=
+begin
+  assume P Q,
+  assume notporq,
+  cases em P with p np,
+  have porq: P ∨ Q:= or.inl p,
+  have f:= notporq porq,
+  exact false.elim f,
+  
+  cases em Q with q nq,
+  have porq: P ∨ Q:= or.inr q,
+  have f:= notporq porq,
+  exact false.elim f,
+
+  apply and.intro,
+  exact np,
+  exact nq,
+end
+
+
+-- 7
+theorem disappearing_opposite : 
+  ∀ (P Q : Prop), P ∨ ¬P ∧ Q ↔ P ∨ Q := 
+begin
+  assume P Q,
+  apply iff.intro,
+  assume prop,
+  apply or.elim prop,
+  assume p,
+  apply or.intro_left,
+  exact p,
+  assume prop2,
+  apply and.elim prop2,
+  assume np,
+  assume q,
+  apply or.intro_right,
+  exact q,
+
+  assume prop,
+  apply or.elim prop,
+  assume p,
+  apply or.intro_left,
+  exact p,
+  assume q,
+  cases (em P) with p np,
+  apply or.intro_left,
+  exact p,
+  apply or.intro_right,
+  apply and.intro,
+  exact np,
+  exact q,
+end
+
+
+-- 8
+theorem distrib_and_or : 
+  ∀ (P Q R: Prop), (P ∨ Q) ∧ (P ∨ R) ↔
+                    P ∨ (Q ∧ R) :=
+begin
+  assume P Q R,
+  apply iff.intro,
+  assume prop,
+  have pq:= and.elim_left prop,
+  have pr:= and.elim_right prop,
+  apply or.elim pq,
+  assume p,
+  apply or.intro_left,
+  exact p,
+  assume q,
+  apply or.elim pr,
+  assume p,
+  apply or.intro_left,
+  exact p,
+  assume r,
+  apply or.intro_right,
+  apply and.intro,
+  exact q,
+  exact r,
+  
+  
+  assume prop,
+  apply or.elim prop,
+  assume p,
+  apply and.intro,
+  apply or.intro_left,
+  exact p,
+  apply or.intro_left,
+  exact p,
+  assume qr,
+  apply and.elim qr,
+  assume q,
+  assume r,
+  apply and.intro,
+  apply or.intro_right,
+  exact q,
+  apply or.intro_right,
+  exact r,
+
+end
+
+-- remember or is right associative
+-- you need this to know what the lefts and rights are
+-- 9
+theorem distrib_and_or_foil : 
+  ∀ (P Q R S : Prop),
+  (P ∨ Q) ∧ (R ∨ S) ↔
+  (P ∧ R) ∨ (P ∧ S) ∨ (Q ∧ R) ∨ (Q ∧ S) :=
+begin
+  assume P Q R S,
+  apply iff.intro,
+  assume prop,
+  apply and.elim prop,
+  assume pq,
+  assume rs,
+  apply or.elim pq,
+  assume p,
+  apply or.elim rs,
+  assume r,
+  apply or.intro_left,
+  apply and.intro,
+  exact p,
+  exact r,
+
+  assume s,
+  apply or.intro_right,
+  apply or.intro_left,
+  apply and.intro,
+  exact p,
+  exact s,
+  
+  assume q,
+  apply or.elim rs,
+  assume r,
+  apply or.intro_right,
+  apply or.intro_right,
+  apply or.intro_left,
+  apply and.intro,
+  exact q,
+  exact r,
+
+  assume s,
+  apply or.intro_right,
+  apply or.intro_right,
+  apply or.intro_right,
+  apply and.intro,
+  exact q,
+  exact s,
+
+  assume prop,
+  apply or.elim prop,
+  assume pr,
+  apply and.elim pr,
+  assume p,
+  assume r,
+  apply and.intro,
+  apply or.intro_left,
+  exact p,
+  apply or.intro_left,
+  exact r,
+
+  assume prop,
+  apply or.elim prop,
+  assume ps,
+  apply and.elim ps,
+  assume p,
+  assume s,
+  apply and.intro,
+  apply or.intro_left,
+  exact p,
+  apply or.intro_right,
+  exact s,
+
+  assume prop,
+  apply or.elim prop,
+  assume qr,
+  apply and.elim qr,
+  assume q,
+  assume r,
+  apply and.intro,
+  apply or.intro_right,
+  exact q,
+  apply or.intro_left,
+  exact r,
+
+  assume qs,
+  apply and.elim qs,
+  assume q,
+  assume s,
+  apply and.intro,
+  apply or.intro_right,
+  exact q,
+  apply or.intro_right,
+  exact s,
+end
+
+
+/- 10
+Formally state and prove the proposition that
+not every natural number is equal to zero.
+-/
+lemma not_all_nats_are_zero : ∀( n : ℕ ), n=0→true:=
+begin
+  assume N,
+  assume prop,
+  apply true.intro,
+  cases prop,
+  apply false.elim,
+
+end 
+
+-- 11. equivalence of P→Q and (¬P∨Q)
+example : ∀ (P Q : Prop), (P → Q) ↔ (¬P ∨ Q) :=
+begin
+  assume P Q,
+  apply iff.intro,
+  assume pq,
+  have pornp :=classical.em P,
+  cases pornp with p np,
+  have q:= pq p,
+  apply or.intro_right,
+  exact q,
+  apply or.intro_left,
+  exact np,
+
+  assume nporq,
+  assume p,
+  apply or.elim(em Q),
+  assume q,
+  exact q,
+
+  assume nq,
+  cases em Q with q nq,
+  have q:= nq nporq,
+  have q: Q:= or.elim nporq,
+  apply or.intro p nq,
+  apply or.elim(em P),
+  have pornq:= or.elim nporq,
+  have q := or.elim 
+
+
+end
+
+-- 12
+example : ∀ (P Q : Prop), (P → Q) → (¬ Q → ¬ P) :=
+begin
+  assume P Q,
+  assume pq : P→Q,
+  assume nq,
+  cases em P with p np,
+  have q:= pq p,
+  have f:= nq q,
+  assume p,
+  exact f,
+
+  exact np,
+end
+
+-- 13
+example : ∀ (P Q : Prop), ( ¬P → ¬Q) → (Q → P) :=
+begin
+  assume P Q,
+  assume npnq,
+  assume q,
+  cases em P with p np,
+  cases em Q with q nq,
+  exact p,
+  exact p,
+  have nq:= npnq np,
+  have f:= nq q,
+  contradiction,
+end
