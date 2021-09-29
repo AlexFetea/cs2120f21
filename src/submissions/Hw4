@@ -68,7 +68,7 @@ begin
   have pandq:= and.intro p q,
   have pfalse:= notpq pandq,
   exact false.elim pfalse,
-  exact or.intro_right(¬P) nq,
+  exact or.intro_right (¬P) nq,
   exact or.intro_left(¬Q) np,
 
   assume npornq,
@@ -282,14 +282,12 @@ end
 Formally state and prove the proposition that
 not every natural number is equal to zero.
 -/
-lemma not_all_nats_are_zero : ∀( n : ℕ ), n=0→true:=
+lemma not_all_nats_are_zero : ∃(n : ℕ), (n ≠ 0) → true:=
 begin
+  intros,
+  apply exists.intro 1,
   assume N,
-  assume prop,
   apply true.intro,
-  cases prop,
-  apply false.elim,
-
 end 
 
 -- 11. equivalence of P→Q and (¬P∨Q)
@@ -308,27 +306,23 @@ begin
 
   assume nporq,
   assume p,
-  apply or.elim(em Q),
+  apply or.elim (em Q),
   assume q,
   exact q,
-
   assume nq,
-  cases em Q with q nq,
-  have q:= nq nporq,
-  have q: Q:= or.elim nporq,
-  apply or.intro p nq,
-  apply or.elim(em P),
-  have pornq:= or.elim nporq,
-  have q := or.elim 
-
-
+  apply or.elim nporq,
+  assume np,
+  have f:= np p,
+  contradiction,
+  assume q,
+  exact q,
 end
 
 -- 12
 example : ∀ (P Q : Prop), (P → Q) → (¬ Q → ¬ P) :=
 begin
   assume P Q,
-  assume pq : P→Q,
+  assume pq,
   assume nq,
   cases em P with p np,
   have q:= pq p,
@@ -353,3 +347,4 @@ begin
   have f:= nq q,
   contradiction,
 end
+
