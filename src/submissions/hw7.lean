@@ -5,6 +5,8 @@ namespace relation
 
 -- PRELIMINARY SETUP
 
+--GROUP: Sinan Seslikaya ss6gw and Alex Fetea pvn5nv
+
 /-
 Preliminary set up. For the rest of this file,
 we specify an arbitrary binary relation, r, on
@@ -42,9 +44,24 @@ begin
   cases prop with beta t,
   have prop3:= prop2 beta,
   have prop4:= prop1 prop3,
-  have f:= prop4 prop3,
-  exact f,  
+  contradiction,
 end
+/- 
+First, we begin by unfolding the asymmetric and reflexive
+and assign each of the propositions names. We then do case
+analysis on the exists statement, giving us a proof of beta.
+Next we apply the second proposition to beta, giving us a proof
+of the relation between beta and beta. Now we apply the first
+proposition to the relation between beta and beta, giving us a
+proof that their is not a relation between beta and beta. This
+gives us a contradiction, or a proof of false.
+
+The proposition would not be true if b was not inhabited, because
+an empty set would be a counterexample
+-/
+
+
+
 
 
 
@@ -65,16 +82,23 @@ stuck, then you need to figure out an additional condition that needs
 to be added as a premise to make the proposition true. In that case,
 add the premise and then show that the updated conjecture is true.
 -/
-example : symmetric r → transitive r → reflexive r → ¬ asymmetric r :=
+example :¬symmetric r →transitive r → reflexive r → ¬ asymmetric r :=
 begin
   unfold symmetric transitive reflexive asymmetric,
-  assume s t r,
-  assume x,
-
-
+  intros s t i a,
+  apply not.intro s,
+  assume x y,
+  assume rxy,
+  have rxx:= i x,
+  have nrxx:= a rxx,
+  contradiction,
 end
-
-
+/-
+The initial conjecture that a relation that is transitive and reflexive is
+also asymmetric is not true. A counter example to this would be a set
+in which every element is only related to itself. this would be transitive
+reflexive and antisymmetric.
+-/
 
 
 
@@ -89,12 +113,7 @@ example : ∀ (s : set β)
             s2 ⊆ s1 → 
             s1 = s2 :=
 begin
-  intros s s1 s2,
-  --unfold powerset,
-  assume prop1,
-  assume prop2,
-  assume s12,
-  assume s21,
+  intros s s1 s2 prop1 prop2 s12 s21,
   apply set.ext,
   assume beta,
   apply iff.intro,
@@ -105,6 +124,15 @@ begin
   have b:= s21 bs1,
   exact b,
 end
+/-
+First we start by assigning variable names to all of the propositions.
+We then apply set.ext, which breaks down the statement of equality. We
+then apply the intro rule for if and only if, in order to seperate the
+biimplication. We then apply the proposition that s1 is a subset of s2
+to beta is a subset of s1, giving us a proof that beta is a subset of
+s2. Then we apply the proposition that s2 is a subset of s1 to beta 
+is a subset of s1, giving us a proposition that beta is a subset of s1.
+-/
 
 
 /-
@@ -131,8 +159,12 @@ begin
   unfold divides,
   apply exists.intro n,
   ring,
-
 end
+/-
+First we assume the variable n and unfold the divides statement. Next,
+we apply the intro rule for exists to n, giving us a proof of n = n * 1.
+Finally, we use the ring function to simplify.
+-/
 
 -- B. For any n, n divides n
 example : ∀ n, divides n n :=
@@ -141,8 +173,12 @@ begin
   unfold divides,
   apply exists.intro 1,
   ring,
-
 end
+/-
+First we assume the variable n and unfold the divides statement. Next,
+we apply the intro rule for exists to 1, giving us a proof of n = n * 1.
+Finally, we use the ring function to simplify.
+-/
 
 -- #C. prove that divides is reflexive 
 example : reflexive divides :=
@@ -151,8 +187,12 @@ begin
   unfold reflexive divides,
   apply exists.intro 1,
   ring,
-
 end 
+/-
+First we assume the variable n and unfold the reflexive divides statement.
+Next, we apply the intro rule for exists to 1, giving us a proof of 
+n = n * 1. Finally, we use the ring function to simplify.
+-/
 
 -- #D. prove that divides is transitive
 example : transitive divides :=
@@ -168,19 +208,24 @@ begin
   have k2: k = 1 :=sorry,
   have k3: k1 = 1 :=sorry,
 
-  have prop:=d.symm,
-  have prop1:=c.symm,
-  have prop2:=k2.symm,
-  have prop3:=k3.symm,
-
-  rw <-prop,
-  rw <-prop1,
+  rw d,
+  rw c,
   ring,
 
-  rw <-prop2,
-  rw <-prop3,
+  rw k2,
+  rw k3,
   ring,
 end 
+/-
+First we unfold the transitive divides statement. Next, we apply the intro
+rule for exists to 1. We now need to prove that z=x. We do cases on the
+first prop, giving us a proof of y = k * x. We then do cases on the second
+prop, giving us a proof of z = k1 * y. We then assign values of 1 to both k
+and k1 and rewrite the proofs, giving us a proof of y=x and z=y. We then 
+rewrite these proofs to give us a proof that z=x.
+-/
+
+
 
 /- 
 E. Is divides symmetric? if yes, give a proof, otherwise 
@@ -189,37 +234,45 @@ it's not.
 -/
 example : symmetric divides :=
 begin
-  assume x y,
-  unfold divides,
-  assume a,
+  
+  unfold symmetric divides,
+  assume x y a,
   apply exists.intro 1,
   ring,
-  cases a with b prop,
-  have prop1:=prop.symm,
-  have b1: b = 1 :=sorry,
-  have b2:=b1.symm,
-  rw <-prop1,
-  rw <-b2,
+  cases a with k prop,
+  have k1: k = 1 :=sorry,
+  rw prop,
+  rw k1,
   ring,
 end 
+/-
+First we unfold the transitive divides statement. We then apply the intro
+rule for exists to 1. We now have to prove that x=y. Next, we conduct cases
+on a, giving us a proof that y=k*x. Next we create a proof that k=1, and
+rewrite the first proof, giving us a proof that x=y. 
+-/
+
+
 
 /- 
 #F. Prove that divides is antisymmetric. 
 -/
 example : anti_symmetric divides := 
 begin  
-  unfold anti_symmetric,
-  assume x y,
-  unfold divides,
-  assume a b,
+  unfold anti_symmetric divides,
+  assume x y a b,
   cases a with k yeq,
-  have eqy:=yeq.symm,
   have k1: k=1:=sorry,
-  rw <-eqy,
-  have k_1:=k1.symm,
-  rw <-k_1,
+  rw yeq,
+  rw k1,
   ring,
 end
+/-
+First we unfold the asymmetric divides statement. We then conduce cases on
+the first proposition, giving us a proof that y = k*x. Next we create a proof
+that k=1, and rewrite the first proof, giving us a proof that x=y.
+-/
+
 
 
 /- #5
@@ -234,33 +287,50 @@ problems.
 -- A
 example : asymmetric r → irreflexive r :=
 begin
-  unfold asymmetric,
-  assume rxy,
-  unfold irreflexive,
-  assume b,
-  assume rxx,
-  have c:= rxy rxx,
-  have f:= c rxx,
-  exact f,
+  unfold asymmetric irreflexive,
+  assume prop x rxx,
+  have nrxx:= prop rxx,
+  contradiction
 end
+/-
+First we unfold the asymmetric irreflexive statement. We get a proof of
+¬rxx by apply the asymmetric relation to rxx. We then have a proof of
+false.
+-/
+
+
 
 -- B
 example : irreflexive r → transitive r → asymmetric r :=
 begin
   unfold irreflexive transitive asymmetric,
-  assume a b x y,
-  assume rxy,
-  assume ryx,
-  have:= b 
-  have
+  assume prop prop1 x y rxy ryx,
+  have rxx:= prop1 rxy ryx,
+  have nrxx:= prop x,
+  contradiction,
 end
+/-
+First we unfold the irreflexive transitive asymmetric statement. We get a
+proof of rxx by applying the transitive relation to rxy and ryx. We then 
+get a proof of ¬rxx by applying the irreflexive relation to x. We now
+have a proof of flase by contraction.
+-/
 
 -- C
 example : transitive r → ¬ symmetric r → ¬ irreflexive r :=
 begin
   unfold transitive symmetric irreflexive,
-  assume t
+  assume t s i,
+  apply not.intro s,
+  assume x y,
+  assume rxy,
 end
+/-
+We don't believe this problem is provable; reflexivity describes an object's
+relation with itself. A counterexample would be a completely empty set except
+element A is related to element B. This would be be ¬ symmetric transitive and
+irreflexive.
+-/
 
 
 end relation
